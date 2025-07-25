@@ -10,7 +10,6 @@ import {
 	ReadResourceRequestSchema,
 } from '@modelcontextprotocol/sdk/types.js';
 import axios from 'axios';
-import dotenv from 'dotenv';
 import {
 	type ForecastDay,
 	isValidForecastArgs,
@@ -18,11 +17,9 @@ import {
 	type WeatherData,
 } from './types.js';
 
-dotenv.config({ override: true});
-
-const API_KEY = process.env.OPENWEATHER_API_KEY;
+const API_KEY = import.meta.env.VITE_OPENWEATHER_API_KEY;
 if (!API_KEY) {
-	throw new Error('OPENWEATHER_API_KEY 환경 변수가 필요합니다');
+	throw new Error('VITE_OPENWEATHER_API_KEY 환경 변수가 필요합니다');
 }
 
 const API_CONFIG = {
@@ -242,6 +239,6 @@ class WeatherServer {
 
 const server = new WeatherServer();
 server.run().catch((error) => {
-	console.error('Failed to run server:');
+	console.error('Failed to run server:', error);
 	process.exit(1);
 });
