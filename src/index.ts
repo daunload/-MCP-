@@ -1,13 +1,10 @@
 import { z } from 'zod';
-import { fetchCurrentWeather } from './api';
-import type { WeatherData } from './types';
+import { fetchBills } from './api.ts';
+import type { OpenAPIBillResponse } from './types';
 import { ErrorCode, McpError } from '@modelcontextprotocol/sdk/types.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import axios from 'axios';
-import {
-	ResourceTemplate,
-	McpServer,
-} from '@modelcontextprotocol/sdk/server/mcp.js';
+import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 
 const server = new McpServer(
 	{
@@ -22,98 +19,49 @@ const server = new McpServer(
 	},
 );
 
-server.registerResource(
-	'city-weather',
-	new ResourceTemplate('weather://{city}/current', { list: undefined }),
-	{
-		title: 'city weather',
-		description:
-			'Fetches the current weather conditions for a specified city',
-		mimeType: 'application/json',
-	},
-	async (uri, { city }) => {
-		if (!city) {
-			throw new Error('City name is required to fetch weather data.');
-		}
-
-		if (Array.isArray(city)) {
-			throw new Error('City is Array.');
-		}
-
-		try {
-			const response = await fetchCurrentWeather(city);
-
-			const weatherData: WeatherData = {
-				temperature: response.data.main.temp,
-				conditions: response.data.weather[0].description,
-				humidity: response.data.main.humidity,
-				wind_speed: response.data.wind.speed,
-				timestamp: new Date().toISOString(),
-			};
-
-			return {
-				contents: [
-					{
-						uri: uri.href,
-						mimeType: 'application/json',
-						text: JSON.stringify(weatherData, null, 2),
-					},
-				],
-			};
-		} catch (error) {
-			if (axios.isAxiosError(error)) {
-				throw new McpError(
-					ErrorCode.InternalError,
-					`날씨 API 오류: ${error.response?.data.message ?? error.message}`,
-				);
-			}
-			throw error;
-		}
-	},
-);
-
 // 도구 등록 추가
 server.registerTool(
-	'get_weather',
+	'get_bills_by_proposer',
 	{
-		title: 'city weather',
-		description: 'Get current weather for a city',
+		title: '국회의원 발의 법률안 조회',
+		description:
+			'특정 국회의원이 발의한 법률안 목록을 가져옵니다. 이름, 회기, 기간 등으로 필터링할 수 있습니다',
 		inputSchema: {
-			city: z
+			proposer: z
 				.string()
-				.min(1, 'City name cannot be empty')
-				.describe('The name of the city'),
+				.min(1, '국회의원 이름이 비어있어!!')
+				.describe('법률안을 발의한 국회의원 이름입니다'),
 		},
 	},
-	async ({ city }) => {
-		if (!city || typeof city !== 'string') {
+	async ({ proposer }) => {
+		if (!proposer || typeof proposer !== 'string') {
 			throw new McpError(
 				ErrorCode.InvalidParams,
-				'City name is required and must be a string',
+				'국회의원 이름은 문자열이어야합니다',
 			);
 		}
 
 		try {
-			const response = await fetchCurrentWeather(city);
+			const response = await fetchBills<OpenAPIBillResponse>({
+				PROPOSER: proposer,
+			});
 
-			const weatherData: WeatherData = {
-				temperature: response.data.main.temp,
-				conditions: response.data.weather[0].description,
-				humidity: response.data.main.humidity,
-				wind_speed: response.data.wind.speed,
-				timestamp: new Date().toISOString(),
-			};
+			const plainData = JSON.parse(JSON.stringify(response.data));
+			const billListData = plainData.nzmimeepazxkubdpn[1]
+				.row as OpenAPIBillResponse[];
 
 			return {
 				content: [
 					{
 						type: 'text',
-						text: `현재 ${city}의 날씨:
-                                온도: ${weatherData.temperature}°C
-                                날씨: ${weatherData.conditions}
-                                습도: ${weatherData.humidity}%
-                                풍속: ${weatherData.wind_speed} m/s
-                                조회시간: ${weatherData.timestamp}`,
+						text: billListData
+							.map((bill) => {
+								return `의안 ID: ${bill.BILL_ID}
+									의안 번호: ${bill.BILL_NO}
+									법률안명: ${bill.BILL_NAME}
+									링크 주소: ${bill.DETAIL_LINK}`;
+							})
+							.join('\n\n'),
 					},
 				],
 			};
@@ -121,7 +69,7 @@ server.registerTool(
 			if (axios.isAxiosError(error)) {
 				throw new McpError(
 					ErrorCode.InternalError,
-					`날씨 API 오류: ${error.response?.data.message ?? error.message}`,
+					`발의 법률안 API 오류: ${error.response?.data.message ?? error.message}`,
 				);
 			}
 			throw error;
@@ -133,7 +81,7 @@ const transport = new StdioServerTransport();
 server
 	.connect(transport)
 	.then(() => {
-		console.error('Weather MCP server running on stdio');
+		console.error('Bill MCP server running on stdio');
 	})
 	.catch((error) => {
 		console.error('Failed to run server', error);

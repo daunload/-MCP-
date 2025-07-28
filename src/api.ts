@@ -1,32 +1,32 @@
 import axios from 'axios';
-import { API_CONFIG } from './constants/api-config';
-import type { OpenWeatherResponse } from './types';
 
 const api = axios.create({
-	baseURL: API_CONFIG.BASE_URL,
+	baseURL: 'https://open.assembly.go.kr/portal/openapi/nzmimeepazxkubdpn',
 	params: {
-		appid: import.meta.env.VITE_OPENWEATHER_API_KEY,
-		units: 'metric',
+		KEY: import.meta.env.VITE_OPENWEATHER_API_KEY,
+		TYPE: 'json',
+		pIndex: 1,
+		pSize: 10,
+		AGE: 21,
 	},
 });
 
-const fetchCityWeather = <T>(city: string, endPoint: string, days?: number) => {
-	return api.get<T>(endPoint, {
-		params: {
-			q: city,
-			cnt: days,
-		},
+type OptionalParams = {
+	BILL_ID?: string; // 의안 ID
+	BILL_NO?: string; // 의안 번호
+	BILL_NAME?: string; // 법률안명
+	COMMITTEE?: string; // 소관위원회
+	PROC_RESULT?: string; // 본회의 심의결과
+	PROPOSER?: string; // 제안자
+	COMMITTEE_ID?: string; // 소관위원회 ID
+};
+
+export const fetchBills = <T>(params: OptionalParams) => {
+	return api.get<T>('', {
+		params,
 	});
 };
 
-/** 현재 날씨 */
-export const fetchCurrentWeather = (city: string) =>
-	fetchCityWeather<OpenWeatherResponse>(city, API_CONFIG.ENDPOINTS.CURRENT);
-
-/** 예측 날씨 */
-export const fetchForecastWeather = (city: string, days: number) =>
-	fetchCityWeather<{ list: OpenWeatherResponse[] }>(
-		city,
-		API_CONFIG.ENDPOINTS.FORECAST,
-		days,
-	);
+fetchBills({ PROPOSER: '이재명' }).then((res) => {
+	console.log(res);
+});
