@@ -1,28 +1,23 @@
 {
 	"name": "weather-server",
-	"version": "0.1.0",
-	"description": "A Model Context Protocol server",
 	"private": true,
+	"version": "0.0.0",
 	"type": "module",
-	"bin": {
-		"weather-server": "./build/index.js"
-	},
-	"files": [
-		"build"
-	],
 	"scripts": {
 		"dev": "vite",
-		"build": "vite build",
-		"inspector": "npx @modelcontextprotocol/inspector build/index.js"
-	},
-	"dependencies": {
-		"@modelcontextprotocol/sdk": "0.6.0",
-		"axios": "^1.11.0"
+		"build": "tsc && vite build",
+		"preview": "vite preview",
+		"inspector": "npx @modelcontextprotocol/inspector dist/index.js"
 	},
 	"devDependencies": {
-		"@biomejs/biome": "^2.1.2",
-		"@types/node": "^20.19.9",
-		"typescript": "^5.3.3",
-		"vite": "^7.0.6"
+		"@biomejs/biome": "2.1.2",
+		"typescript": "~5.8.3",
+		"vite": "^7.0.4"
+	},
+	"dependencies": {
+		"@modelcontextprotocol/sdk": "^1.17.0",
+		"@types/node": "^24.1.0",
+		"axios": "^1.11.0",
+		"zod": "^3.25.76"
 	}
 }
