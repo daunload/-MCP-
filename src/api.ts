@@ -3,7 +3,7 @@ import axios from 'axios';
 const api = axios.create({
 	baseURL: 'https://open.assembly.go.kr/portal/openapi/nzmimeepazxkubdpn',
 	params: {
-		KEY: import.meta.env.VITE_OPENWEATHER_API_KEY,
+		KEY: import.meta.env.VITE_OPEN_API_KEY,
 		TYPE: 'json',
 		pIndex: 1,
 		pSize: 10,
@@ -26,7 +26,3 @@ export const fetchBills = <T>(params: OptionalParams) => {
 		params,
 	});
 };
-
-fetchBills({ PROPOSER: '이재명' }).then((res) => {
-	console.log(res);
-});
