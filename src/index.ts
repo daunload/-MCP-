@@ -5,6 +5,7 @@ import { ErrorCode, McpError } from '@modelcontextprotocol/sdk/types.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import axios from 'axios';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+import { getBillSummery } from './crawler/bill-detail.ts';
 
 const server = new McpServer(
 	{
@@ -47,19 +48,45 @@ server.registerTool(
 			});
 
 			const plainData = JSON.parse(JSON.stringify(response.data));
+
+			if (Object.hasOwn(plainData, 'RESULT')) {
+				return {
+					content: [
+						{
+							type: 'text',
+							text: `[${plainData.RESULT.CODE}] - ${plainData.RESULT.MESSAGE}`,
+						},
+					],
+				};
+			}
+
 			const billListData = plainData.nzmimeepazxkubdpn[1]
 				.row as OpenAPIBillResponse[];
+
+			const formattedBillList = await Promise.all(
+				billListData.map(async (bill) => {
+					const summary = await getBillSummery(bill.DETAIL_LINK);
+					return {
+						id: bill.BILL_ID,
+						bill_number: bill.BILL_NO,
+						name: bill.BILL_NAME,
+						summary,
+						detail_link: bill.DETAIL_LINK,
+					};
+				}),
+			);
 
 			return {
 				content: [
 					{
 						type: 'text',
-						text: billListData
+						text: formattedBillList
 							.map((bill) => {
-								return `의안 ID: ${bill.BILL_ID}
-									의안 번호: ${bill.BILL_NO}
-									법률안명: ${bill.BILL_NAME}
-									링크 주소: ${bill.DETAIL_LINK}`;
+								return `의안 ID: ${bill.id}
+									의안 번호: ${bill.bill_number}
+									법률안명: ${bill.name}
+                                    제안 이유: ${bill.summary}
+									링크 주소: ${bill.detail_link}`;
 							})
 							.join('\n\n'),
 					},
