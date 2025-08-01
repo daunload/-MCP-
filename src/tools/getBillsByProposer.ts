@@ -1,9 +1,9 @@
 import { ErrorCode, McpError } from '@modelcontextprotocol/sdk/types.js';
 import axios from 'axios';
 import { z } from 'zod';
-import { fetchBills } from '../api.ts';
 import { getBillSummery } from '../crawler/bill-detail.ts';
-import type { OpenAPIBillResponse } from '../types';
+import { fetchBills } from '../http/api.ts';
+import type { BillApiResponse } from '../http/types.ts';
 import type { IToolInfo } from './types.ts';
 
 export const getBillsByProposer: IToolInfo = {
@@ -27,22 +27,22 @@ export const getBillsByProposer: IToolInfo = {
 			);
 		}
 		try {
-			const response = await fetchBills<OpenAPIBillResponse>({
+			const response = await fetchBills<BillApiResponse>({
 				PROPOSER: proposer,
 			});
-			const plainData = JSON.parse(JSON.stringify(response.data));
-			if (Object.hasOwn(plainData, 'RESULT')) {
+
+			const responseData = response.data;
+			if ('RESULT' in responseData) {
 				return {
 					content: [
 						{
 							type: 'text',
-							text: `[${plainData.RESULT.CODE}] - ${plainData.RESULT.MESSAGE}`,
+							text: `[${responseData.RESULT.CODE}] - ${responseData.RESULT.MESSAGE}`,
 						},
 					],
 				};
 			}
-			const billListData = plainData.nzmimeepazxkubdpn[1]
-				.row as OpenAPIBillResponse[];
+			const billListData = responseData.nzmimeepazxkubdpn[1].row;
 			const formattedBillList = await Promise.all(
 				billListData.map(async (bill) => {
 					const summary = await getBillSummery(bill.DETAIL_LINK);
@@ -62,10 +62,10 @@ export const getBillsByProposer: IToolInfo = {
 						text: formattedBillList
 							.map((bill) => {
 								return `의안 ID: ${bill.id}
-					의안 번호: ${bill.bill_number}
-					법률안명: ${bill.name}
-                                    제안 이유: ${bill.summary}
-					링크 주소: ${bill.detail_link}`;
+                                        의안 번호: ${bill.bill_number}
+                                        법률안명: ${bill.name}
+                                        제안 이유: ${bill.summary}
+					                    링크 주소: ${bill.detail_link}`;
 							})
 							.join('\n\n'),
 					},

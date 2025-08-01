@@ -1,4 +1,5 @@
-export interface OpenAPIBillResponse {
+/** 개별 법률안 정보 인터페이스 */
+export interface BillInfo {
 	BILL_ID: string; // 의안 ID
 	BILL_NO: string; // 의안 번호
 	BILL_NAME: string; // 법률안명
@@ -22,3 +23,36 @@ export interface OpenAPIBillResponse {
 	LAW_PROC_RESULT_CD: string; // 법사위 처리결과 코드
 	RST_PROPOSER: string;
 }
+
+/** API 응답 결과 코드 인터페이스*/
+interface ApiResult {
+	CODE: string;
+	MESSAGE: string;
+}
+
+/** 응답 헤더 정보 인터페이스*/
+interface ResponseHead {
+	list_total_count?: number;
+	RESULT?: ApiResult;
+}
+
+/** 응답 데이터 구조 인터페이스*/
+interface ResponseData {
+	head: ResponseHead[];
+}
+
+/** 응답 행 데이터 인터페이스*/
+interface ResponseRow {
+	row: BillInfo[];
+}
+
+interface ErrorResponse {
+	RESULT: ApiResult;
+}
+
+interface SuccessResponse {
+	nzmimeepazxkubdpn: [ResponseData, ResponseRow];
+}
+
+/** 전체 API 응답 인터페이스*/
+export type BillApiResponse = SuccessResponse | ErrorResponse;
