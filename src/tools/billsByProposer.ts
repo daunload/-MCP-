@@ -6,20 +6,21 @@ import { fetchBills } from '../http/api.ts';
 import type { BillApiResponse } from '../http/types.ts';
 import type { IToolInfo } from './types.ts';
 
-export const getBillsByProposer: IToolInfo = {
+export const billsByProposer: IToolInfo = {
 	name: 'get_bills_by_proposer',
 	config: {
 		title: '국회의원 발의 법률안 조회',
 		description:
-			'특정 국회의원이 발의한 법률안 목록을 가져옵니다. 이름, 회기, 기간 등으로 필터링할 수 있습니다',
+			'특정 국회의원이 발의한 법률안 목록을 가져옵니다. 이름, 대수 등으로 필터링할 수 있습니다',
 		inputSchema: {
 			proposer: z
 				.string()
 				.min(1, '국회의원 이름이 비어있어!!')
 				.describe('법률안을 발의한 국회의원 이름입니다'),
+			age: z.number().default(22).describe('국회의원 대수입니다.'),
 		},
 	},
-	callback: async ({ proposer }) => {
+	callback: async ({ proposer, age }) => {
 		if (!proposer || typeof proposer !== 'string') {
 			throw new McpError(
 				ErrorCode.InvalidParams,
@@ -29,6 +30,7 @@ export const getBillsByProposer: IToolInfo = {
 		try {
 			const response = await fetchBills<BillApiResponse>({
 				PROPOSER: proposer,
+				AGE: age,
 			});
 
 			const responseData = response.data;

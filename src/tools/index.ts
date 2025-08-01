@@ -1,10 +1,10 @@
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
-import { getBillsByProposer } from './getBillsByProposer.ts';
+import { billsByProposer } from './billsByProposer.ts';
 
 export function registerTools(server: McpServer) {
 	server.registerTool(
-		getBillsByProposer.name,
-		getBillsByProposer.config,
-		getBillsByProposer.callback,
+		billsByProposer.name,
+		billsByProposer.config,
+		billsByProposer.callback,
 	);
 }

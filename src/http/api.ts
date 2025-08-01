@@ -7,11 +7,11 @@ const api = axios.create({
 		TYPE: 'json',
 		pIndex: 1,
 		pSize: 10,
-		AGE: 21,
 	},
 });
 
 type OptionalParams = {
+	AGE: number;
 	BILL_ID?: string; // 의안 ID
 	BILL_NO?: string; // 의안 번호
 	BILL_NAME?: string; // 법률안명
