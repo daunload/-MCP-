@@ -6,9 +6,9 @@ import type { BillApiResponse } from '../http/types.ts';
 import type { IRegisterPromptInfo } from './types.ts';
 
 export const evaluationProposer: IRegisterPromptInfo = {
-	name: 'evaluation_memberOfParliament',
+	name: '법안 평가',
 	config: {
-		title: '국회의원을 평가합니다',
+		title: '법안 평가',
 		description: '국회의원이 발의한 법안을 평가합니다',
 		argsSchema: {
 			proposer: z
