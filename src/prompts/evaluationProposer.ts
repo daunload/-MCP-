@@ -1,8 +1,8 @@
 import { ErrorCode, McpError } from '@modelcontextprotocol/sdk/types.js';
 import { z } from 'zod';
+import { fetchBills } from '../api/bill.ts';
+import type { BillApiResponse } from '../api/types.ts';
 import { getBillSummery } from '../crawler/bill-detail.ts';
-import { fetchBills } from '../http/api.ts';
-import type { BillApiResponse } from '../http/types.ts';
 import type { IRegisterPromptInfo } from './types.ts';
 
 export const evaluationProposer: IRegisterPromptInfo = {

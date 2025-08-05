@@ -24,6 +24,20 @@ export interface BillInfo {
 	RST_PROPOSER: string;
 }
 
+/** 입법예고 정보 인터페이스 */
+export interface LegislativeInfo {
+	BILL_ID: string; // 의안 ID
+	BILL_NO: string; // 의안번호
+	BILL_NAME: string; // 법률안명
+	AGE: string; // 국회 회기 (예: "22")
+	PROPOSER_KIND_CD: string; // 제안자 구분 (예: "정부", "국회의원")
+	CURR_COMMITTEE: string; // 소관위원회명
+	NOTI_ED_DT: string; // 게시종료일 (YYYY-MM-DD)
+	LINK_URL: string; // 입법안 상세페이지 링크
+	PROPOSER: string; // 제안자 이름
+	CURR_COMMITTEE_ID: string; // 소관위원회 ID
+}
+
 /** API 응답 결과 코드 인터페이스*/
 interface ApiResult {
 	CODE: string;
@@ -42,17 +56,23 @@ interface ResponseData {
 }
 
 /** 응답 행 데이터 인터페이스*/
-interface ResponseRow {
-	row: BillInfo[];
+interface ResponseRow<T> {
+	row: T[];
 }
 
 interface ErrorResponse {
 	RESULT: ApiResult;
 }
 
-interface SuccessResponse {
-	nzmimeepazxkubdpn: [ResponseData, ResponseRow];
+interface BillSuccessResponse {
+	nzmimeepazxkubdpn: [ResponseData, ResponseRow<BillInfo>];
+}
+interface LegislativeSuccessResponse {
+	nknalejkafmvgzmpt: [ResponseData, ResponseRow<LegislativeInfo>];
 }
 
 /** 전체 API 응답 인터페이스*/
-export type BillApiResponse = SuccessResponse | ErrorResponse;
+export type BillApiResponse = BillSuccessResponse | ErrorResponse;
+
+/** 전체 API 응답 인터페이스*/
+export type LegislativeApiResponse = LegislativeSuccessResponse | ErrorResponse;

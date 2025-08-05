@@ -1,37 +1,20 @@
 import { ErrorCode, McpError } from '@modelcontextprotocol/sdk/types.js';
 import axios from 'axios';
-import { z } from 'zod';
-import { fetchBills } from '../api/bill.ts';
-import type { BillApiResponse } from '../api/types.ts';
+import { fetchLegislative } from '../api/bill.ts';
+import type { LegislativeApiResponse } from '../api/types.ts';
+// import { z } from 'zod';
 import { getBillSummery } from '../crawler/bill-detail.ts';
 import type { IToolInfo } from './types.ts';
 
-export const billsByProposer: IToolInfo = {
-	name: 'get_bills_by_proposer',
+export const legislativeNotice: IToolInfo = {
+	name: 'get_legislative_notice',
 	config: {
-		title: '국회의원 발의 법률안 조회',
-		description:
-			'특정 국회의원이 발의한 법률안 목록을 가져옵니다. 이름, 대수 등으로 필터링할 수 있습니다',
-		inputSchema: {
-			proposer: z
-				.string()
-				.min(1, '국회의원 이름이 비어있어!!')
-				.describe('법률안을 발의한 국회의원 이름입니다'),
-			age: z.number().default(22).describe('국회의원 대수입니다.'),
-		},
+		title: '입법예고 조회',
+		description: '진행중 입법예고 정보를 제공합니다.',
 	},
-	callback: async ({ proposer, age }) => {
-		if (!proposer || typeof proposer !== 'string') {
-			throw new McpError(
-				ErrorCode.InvalidParams,
-				'국회의원 이름은 문자열이어야합니다',
-			);
-		}
+	callback: async () => {
 		try {
-			const response = await fetchBills<BillApiResponse>({
-				PROPOSER: proposer,
-				AGE: age,
-			});
+			const response = await fetchLegislative<LegislativeApiResponse>({});
 
 			const responseData = response.data;
 			if ('RESULT' in responseData) {
@@ -44,16 +27,18 @@ export const billsByProposer: IToolInfo = {
 					],
 				};
 			}
-			const billListData = responseData.nzmimeepazxkubdpn[1].row;
+			console.error(responseData.nknalejkafmvgzmpt[1]);
+
+			const billListData = responseData.nknalejkafmvgzmpt[1].row;
 			const formattedBillList = await Promise.all(
 				billListData.map(async (bill) => {
-					const summary = await getBillSummery(bill.DETAIL_LINK);
+					const summary = await getBillSummery(bill.LINK_URL);
 					return {
 						id: bill.BILL_ID,
 						bill_number: bill.BILL_NO,
 						name: bill.BILL_NAME,
 						summary,
-						detail_link: bill.DETAIL_LINK,
+						detail_link: bill.LINK_URL,
 					};
 				}),
 			);
